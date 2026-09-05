@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Controle Financeiro{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div>
+        <span class="eyebrow">Dashboard financeiro</span>
+        <h1>Visão geral</h1>
+        <p>Acompanhe receitas, despesas e saldo em um só lugar.</p>
+    </div>
+</section>
+
+<section class="cards">
+    <article class="card">
+        <span>Receitas</span>
+        <strong>R$ {{ "%.2f"|format(resumo.receitas) }}</strong>
+    </article>
+    <article class="card">
+        <span>Despesas</span>
+        <strong>R$ {{ "%.2f"|format(resumo.despesas) }}</strong>
+    </article>
+    <article class="card">
+        <span>Saldo</span>
+        <strong>R$ {{ "%.2f"|format(resumo.saldo) }}</strong>
+    </article>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <span class="eyebrow">Movimentações</span>
+            <h2>Lançamentos</h2>
+        </div>
+
+        <form method="get" class="filter">
+            <select name="tipo" onchange="this.form.submit()">
+                <option value="" {% if not filtro %}selected{% endif %}>Todos</option>
+                <option value="receita" {% if filtro == "receita" %}selected{% endif %}>Receitas</option>
+                <option value="despesa" {% if filtro == "despesa" %}selected{% endif %}>Despesas</option>
+            </select>
+        </form>
+    </div>
+
+    {% if lancamentos %}
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Descrição</th>
+                        <th>Categoria</th>
+                        <th>Tipo</th>
+                        <th>Valor</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in lancamentos %}
+                    <tr>
+                        <td>{{ item.data }}</td>
+                        <td>{{ item.descricao }}</td>
+                        <td>{{ item.categoria }}</td>
+                        <td>
+                            <span class="badge {{ item.tipo }}">{{ item.tipo|capitalize }}</span>
+                        </td>
+                        <td>R$ {{ "%.2f"|format(item.valor) }}</td>
+                        <td class="actions">
+                            <a href="{{ url_for('financeiro.editar', lancamento_id=item.id) }}">Editar</a>
+                            <form method="post"
+                                  action="{{ url_for('financeiro.excluir', lancamento_id=item.id) }}"
+                                  onsubmit="return confirm('Excluir este lançamento?');">
+                                <button type="submit" class="link-danger">Excluir</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty">
+            <h3>Nenhum lançamento encontrado</h3>
+            <p>Cadastre sua primeira receita ou despesa.</p>
+            <a class="button primary" href="{{ url_for('financeiro.novo') }}">Cadastrar lançamento</a>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}
